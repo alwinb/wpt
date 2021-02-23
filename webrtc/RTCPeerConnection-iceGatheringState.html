@@ -216,7 +216,17 @@
     // when icegatheringstatechange event is fired.
     pc2.addEventListener('icegatheringstatechange', onIceGatheringStateChange);
 
-    exchangeIceCandidates(pc1, pc2);
+    // TODO: this should be using exchangeIceCandidate but that is flaky.
+    pc1.addEventListener('icecandidate', e => {
+        if (pc2.signalingState === 'closed') return;
+        if (!e.candidate) return;
+        pc2.addIceCandidate(e.candidate);
+    });
+    pc2.addEventListener('icecandidate', e => {
+        if (pc1.signalingState === 'closed') return;
+        if (!e.candidate) return;
+        pc1.addIceCandidate(e.candidate);
+    });
     exchangeOfferAnswer(pc1, pc2);
   }, 'connection with one data channel should eventually have connected connection state');
 
